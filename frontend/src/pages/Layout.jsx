@@ -17,53 +17,50 @@ export default function Layout() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-useEffect(() => {
-  try {
-    if (newsData && newsData.Sheet1 && Array.isArray(newsData.Sheet1)) {
-      // Take only the first 100 items using slice()
-      const first100Items = newsData.Sheet1.slice(0, 100);
-      
-      const transformedNews = first100Items.map((item, index) => {
-        // Ensure content is a string and handle empty/undefined cases
-        const content = typeof item.content === 'string' ? item.content : '';
-        const description = content.length > 0 
-          ? content.substring(0, 200) + (content.length > 200 ? '...' : '')
-          : 'No description available';
+  useEffect(() => {
+    try {
+      if (newsData && newsData.Sheet1 && Array.isArray(newsData.Sheet1)) {
+        const first100Items = newsData.Sheet1.slice(0, 100);
+        
+        const transformedNews = first100Items.map((item, index) => {
+          const content = typeof item.content === 'string' ? item.content : '';
+          const description = content.length > 0 
+            ? content.substring(0, 200) + (content.length > 200 ? '...' : '')
+            : 'No description available';
 
-        return {
-          id: item.id || index.toString(),
-          title: item.title || 'Untitled',
-          description: description,
-          fullContent: content,
-          author: item.author || 'Unknown',
-          timestamp: formatDate(item.published_date),
-          isVerified: true,
-          category: 'General',
-          image: `https://picsum.photos/800/400?random=${index}`,
-          link: item.url || '#',
-          keywords: [],
-          sentiment: 'neutral',
-          source: {
-            name: item.source || 'Unknown source',
-            url: item.url || '#',
-            icon: null
-          }
-        };
-      });
-      setNews(transformedNews);
+          return {
+            id: item.id || index.toString(),
+            title: item.title || 'Untitled',
+            description: description,
+            fullContent: content,
+            author: item.author || 'Unknown',
+            timestamp: formatDate(item.published_date),
+            isVerified: true,
+            category: 'General',
+            image: `https://picsum.photos/800/400?random=${index}`,
+            link: item.url || '#',
+            keywords: [],
+            sentiment: 'neutral',
+            source: {
+              name: item.source || 'Unknown source',
+              url: item.url || '#',
+              icon: null
+            }
+          };
+        });
+        setNews(transformedNews);
+      }
+      setLoading(false);
+    } catch (err) {
+      setError('Failed to load news data');
+      setLoading(false);
+      console.error(err);
     }
-    setLoading(false);
-  } catch (err) {
-    setError('Failed to load news data');
-    setLoading(false);
-    console.error(err);
-  }
-}, []);
+  }, []);
 
   function formatDate(dateNumber) {
     if (!dateNumber) return 'Date not available';
     
-    // Convert Excel date number to JavaScript Date
     const date = new Date((dateNumber - 25569) * 86400 * 1000);
     if (isNaN(date.getTime())) return 'Invalid date';
     
@@ -125,7 +122,6 @@ useEffect(() => {
       <Header darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
       
       <main className="container mx-auto px-4 py-8">
-                
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {news.map((item) => (
             <div 
@@ -197,8 +193,17 @@ useEffect(() => {
                       </button>
                     </div>
                     
-                    {activeFeature === 'translate' && activeNewsId === item.id && 
-                      <Translator news={item} darkMode={darkMode} setActiveFeature={setActiveFeature} />}
+                    {activeFeature === 'translate' && activeNewsId === item.id && (
+                      <Translator 
+                        news={{
+                          title: item.title,
+                          description: item.description,
+                          content: item.fullContent
+                        }} 
+                        darkMode={darkMode} 
+                        setActiveFeature={setActiveFeature} 
+                      />
+                    )}
                     {activeFeature === 'verify' && activeNewsId === item.id && 
                       <Verification news={item} darkMode={darkMode} />}
                   </div>
@@ -207,17 +212,17 @@ useEffect(() => {
                 <p className={`mb-4 ${darkMode ? 'text-gray-300' : 'text-gray-600'} line-clamp-3`}>{item.description}</p>
                 
                 <div className="mt-auto">
-                {item.keywords && item.keywords.length > 0 && (
+                  {item.keywords && item.keywords.length > 0 && (
                     <div className="flex flex-wrap gap-2 mb-3">
-                         {Array.isArray(item.keywords) && item.keywords.length > 0 && (
-                          <div className="flex flex-wrap gap-2 mb-3">
-                            {item.keywords.slice(0, 3).map((keyword, index) => (
-                              <span key={index} className={`text-xs px-2 py-1 rounded-full ${darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700'}`}>
-                                {keyword}
-                              </span>
-                            ))}
-                          </div>
-                        )}
+                      {Array.isArray(item.keywords) && item.keywords.length > 0 && (
+                        <div className="flex flex-wrap gap-2 mb-3">
+                          {item.keywords.slice(0, 3).map((keyword, index) => (
+                            <span key={index} className={`text-xs px-2 py-1 rounded-full ${darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700'}`}>
+                              {keyword}
+                            </span>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   )}
                   
@@ -226,7 +231,7 @@ useEffect(() => {
                       <span className="font-medium">{item.author}</span> • {item.timestamp}
                     </div>
                     <div className="flex space-x-2">
-                    <Link 
+                      <Link 
                         to={`/news/${item.id}`}
                         className={`px-3 py-1 text-sm rounded-lg ${darkMode ? 'bg-blue-800 hover:bg-blue-700 text-blue-100' : 'bg-blue-100 hover:bg-blue-200 text-blue-800'}`}
                       >
