@@ -509,7 +509,7 @@ export default function NewsDetailPage() {
           </button>
 
           <button 
-            onClick={() => navigate('/')}
+            onClick={() => navigate('/news-home')}
             className={`flex items-center px-4 py-2 text-sm sm:text-base ${darkMode ? 'bg-emerald-700 hover:bg-emerald-600' : 'bg-emerald-600 hover:bg-emerald-700'} text-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5`}
           >
             <Home className="mr-2" size={16} strokeWidth={2.5} />

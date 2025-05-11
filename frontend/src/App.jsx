@@ -7,6 +7,8 @@ import NewsDetailPage from './pages/NewsDetails';
 import Landingpage from './pages/landingpage';
 import Settings from "./pages/Settings";
 import Adds from './pages/adds';
+import ChatbotAds from './pages/ChatbotAds';
+
 
 export default function App() {
   return (
@@ -24,8 +26,10 @@ export default function App() {
         
         {/* Standalone routes */}
         <Route path="/" element={<Landingpage />} />
-        <Route path="/settings" element={<Settings />} /> {/* Add this line */}
+        <Route path="/settings" element={<Settings />} /> 
         <Route path="/news/:id" element={<NewsDetailPage />} />
+
+        <Route path="/chatbot-ads" element={<ChatbotAds />} />
       </Routes>
     </Router>
   );

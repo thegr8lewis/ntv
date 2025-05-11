@@ -1,215 +1,17 @@
-// import { useState, useEffect } from 'react';
-// import { ChevronLeft, ChevronRight, Star, Heart, ShoppingCart, Share2, X as XIcon } from 'lucide-react';
-
-// const AdPopup = ({ ads, darkMode, onClose }) => {
-//   const [currentAdIndex, setCurrentAdIndex] = useState(0);
-//   const [liked, setLiked] = useState(false);
-//   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-
-//   if (!ads || ads.length === 0) return null;
-
-//   const currentAd = ads[currentAdIndex];
-
-//   const productImages = [
-//     currentAd.img,
-//     currentAd.img.replace('kjkbv680-0', 'kjkbv680-1'),
-//     currentAd.img.replace('kjkbv680-0', 'kjkbv680-2')
-//   ];
-
-//   const formatPrice = (price) => {
-//     return price.replace(/â¹/g, '₹').replace(/,/g, '');
-//   };
-
-//   const actualPrice = formatPrice(currentAd.actual_price);
-//   const soldPrice = formatPrice(currentAd.sold_price);
-//   const discount = Math.round(((actualPrice - soldPrice) / actualPrice) * 100);
-
-//   return (
-//     <div className={`fixed inset-0 z-50 flex items-center justify-center p-4 ${darkMode ? 'bg-black/70' : 'bg-black/50'}`}>
-//       <div className={`relative rounded-xl shadow-lg overflow-hidden w-full max-w-md ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border`}>
-//         <button 
-//           onClick={onClose}
-//           className={`absolute top-2 right-2 p-1 rounded-full ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`}
-//         >
-//           <XIcon size={20} />
-//         </button>
-        
-//         <div className="bg-gradient-to-r from-pink-500 to-purple-600 p-4 text-white">
-//           <div className="flex justify-between items-center">
-//             <span className="font-bold">Sponsored</span>
-//             <div className="flex items-center space-x-2">
-//               <button className="p-1 rounded-full hover:bg-white/10">
-//                 <Share2 size={16} />
-//               </button>
-//               <button 
-//                 className="p-1 rounded-full hover:bg-white/10"
-//                 onClick={() => setLiked(!liked)}
-//               >
-//                 <Heart size={16} fill={liked ? 'currentColor' : 'none'} />
-//               </button>
-//             </div>
-//           </div>
-//         </div>
-
-//         <div className="p-4">
-//           <div className="relative h-48 overflow-hidden rounded-lg bg-gray-100 mb-3">
-//             <img
-//               src={productImages[currentImageIndex]}
-//               alt={currentAd.title}
-//               className="w-full h-full object-contain"
-//             />
-//           </div>
-
-//           <div className="flex justify-between items-start mb-2">
-//             <span className={`text-sm font-medium ${darkMode ? 'text-purple-400' : 'text-purple-600'}`}>{currentAd.brand}</span>
-//             <div className={`flex items-center px-2 py-1 rounded ${darkMode ? 'bg-yellow-900/30' : 'bg-yellow-50'}`}>
-//               <Star size={12} className="fill-yellow-400 text-yellow-400" />
-//               <span className="ml-1 text-xs font-medium">4.5</span>
-//             </div>
-//           </div>
-
-//           <h3 className={`text-lg font-bold ${darkMode ? 'text-gray-100' : 'text-gray-900'} mb-2`}>{currentAd.title}</h3>
-
-//           <div className="flex items-center mb-3">
-//             <span className={`text-xl font-bold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>₹{soldPrice}</span>
-//             <span className={`ml-2 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'} line-through`}>₹{actualPrice}</span>
-//             <span className="ml-2 text-sm font-medium text-green-600">{discount}% off</span>
-//           </div>
-
-//           <div className="flex space-x-2">
-//             <button className={`flex-1 flex items-center justify-center py-2 px-3 border rounded-lg text-sm font-medium ${
-//               darkMode 
-//                 ? 'border-purple-500 text-purple-400 hover:bg-purple-900/30' 
-//                 : 'border-purple-600 text-purple-600 hover:bg-purple-50'
-//             }`}>
-//               <ShoppingCart size={16} className="mr-1" />
-//               Add to Cart
-//             </button>
-//             <button className="flex-1 py-2 px-3 bg-gradient-to-r from-pink-500 to-purple-600 rounded-lg text-white text-sm font-medium hover:opacity-90">
-//               Buy Now
-//             </button>
-//           </div>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// };
-
-// const AdColumn = ({ ads, darkMode }) => {
-//   const [currentAdIndex, setCurrentAdIndex] = useState(0);
-//   const [liked, setLiked] = useState(false);
-//   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-
-//   useEffect(() => {
-//     const interval = setInterval(() => {
-//       setCurrentAdIndex(prev => (prev + 1) % ads.length);
-//       setCurrentImageIndex(0);
-//     }, 10000); // Change ad every 10 seconds
-//     return () => clearInterval(interval);
-//   }, [ads.length]);
-
-//   if (!ads || ads.length === 0) return null;
-
-//   const currentAd = ads[currentAdIndex];
-
-//   const productImages = [
-//     currentAd.img,
-//     currentAd.img.replace('kjkbv680-0', 'kjkbv680-1'),
-//     currentAd.img.replace('kjkbv680-0', 'kjkbv680-2')
-//   ];
-
-//   const formatPrice = (price) => {
-//     return price.replace(/â¹/g, '₹').replace(/,/g, '');
-//   };
-
-//   const actualPrice = formatPrice(currentAd.actual_price);
-//   const soldPrice = formatPrice(currentAd.sold_price);
-//   const discount = Math.round(((actualPrice - soldPrice) / actualPrice) * 100);
-
-//   return (
-//     <div className={`sticky top-4 h-fit rounded-xl shadow-lg overflow-hidden border ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
-//       <div className="bg-gradient-to-r from-pink-500 to-purple-600 p-3 text-white">
-//         <div className="flex justify-between items-center">
-//           <span className="font-bold text-sm">Sponsored</span>
-//           <div className="flex items-center space-x-2">
-//             <button 
-//               className="p-1 rounded-full hover:bg-white/10"
-//               onClick={() => setLiked(!liked)}
-//             >
-//               <Heart size={16} fill={liked ? 'currentColor' : 'none'} />
-//             </button>
-//           </div>
-//         </div>
-//       </div>
-
-//       <div className="p-4">
-//         <div className="relative h-40 overflow-hidden rounded-lg bg-gray-100 mb-3">
-//           <img
-//             src={productImages[currentImageIndex]}
-//             alt={currentAd.title}
-//             className="w-full h-full object-contain"
-//           />
-//         </div>
-
-//         <div className="flex justify-between items-start mb-1">
-//           <span className={`text-xs font-medium ${darkMode ? 'text-purple-400' : 'text-purple-600'}`}>{currentAd.brand}</span>
-//           <div className={`flex items-center px-2 py-1 rounded ${darkMode ? 'bg-yellow-900/30' : 'bg-yellow-50'}`}>
-//             <Star size={12} className="fill-yellow-400 text-yellow-400" />
-//             <span className="ml-1 text-xs font-medium">4.5</span>
-//           </div>
-//         </div>
-
-//         <h3 className={`text-sm font-bold ${darkMode ? 'text-gray-100' : 'text-gray-900'} mb-1 line-clamp-2`}>{currentAd.title}</h3>
-
-//         <div className="flex items-center mb-2">
-//           <span className={`text-lg font-bold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>₹{soldPrice}</span>
-//           <span className={`ml-1 text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'} line-through`}>₹{actualPrice}</span>
-//           <span className="ml-1 text-xs font-medium text-green-600">{discount}% off</span>
-//         </div>
-
-//         <button className={`w-full py-2 px-3 bg-gradient-to-r from-pink-500 to-purple-600 rounded-lg text-white text-sm font-medium hover:opacity-90`}>
-//           View Deal
-//         </button>
-//       </div>
-//     </div>
-//   );
-// };
-
-// const AdsComponent = ({ ads, darkMode, isMobile, showAdPopup, setShowAdPopup }) => {
-//   if (!ads || ads.length === 0) return null;
-
-//   return (
-//     <>
-//       {/* Column Ad - Desktop */}
-//       <div className="hidden lg:block lg:w-80">
-//         <AdColumn ads={ads} darkMode={darkMode} />
-//       </div>
-
-//       {/* Popup Ad - Mobile */}
-//       {showAdPopup && isMobile && (
-//         <AdPopup ads={ads} darkMode={darkMode} onClose={() => setShowAdPopup(false)} />
-//       )}
-//     </>
-//   );
-// };
-
-// export default AdsComponent;
-
 import { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Star, Heart, Share2, X as XIcon, ExternalLink, Briefcase, MapPin, Clock, DollarSign, Home, ShoppingCart } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Star, Heart, Share2, X as XIcon, ExternalLink, Briefcase, MapPin, Clock, DollarSign, Home, ShoppingCart, MessageCircle } from 'lucide-react';
+import Chatbot from './ChatbotAds';
 
 const JobAdPopup = ({ job, darkMode, onClose }) => {
   const [liked, setLiked] = useState(false);
 
   if (!job) return null;
 
-  // Safely format extensions array
   const getExtensions = () => {
     try {
       if (!job.extensions) return [];
       if (Array.isArray(job.extensions)) return job.extensions;
       if (typeof job.extensions === 'string') {
-        // Clean the string before parsing
         const cleaned = job.extensions.replace(/'/g, '"').replace(/\\/g, '');
         return JSON.parse(cleaned);
       }
@@ -222,13 +24,11 @@ const JobAdPopup = ({ job, darkMode, onClose }) => {
 
   const extensions = getExtensions();
 
-  // Safely get description tokens
   const getDescriptionTokens = () => {
     try {
       if (!job.description_tokens) return [];
       if (Array.isArray(job.description_tokens)) return job.description_tokens;
       if (typeof job.description_tokens === 'string') {
-        // Clean the string before parsing
         const cleaned = job.description_tokens.replace(/'/g, '"').replace(/\\/g, '');
         return JSON.parse(cleaned);
       }
@@ -364,18 +164,16 @@ const JobAdPopup = ({ job, darkMode, onClose }) => {
   );
 };
 
-const JobAdCard = ({ job, darkMode, onViewMore }) => {
+const JobAdCard = ({ job, darkMode, onViewMore, onDiscuss }) => {
   const [liked, setLiked] = useState(false);
 
   if (!job) return null;
 
-  // Safely format extensions array
   const getExtensions = () => {
     try {
       if (!job.extensions) return [];
       if (Array.isArray(job.extensions)) return job.extensions;
       if (typeof job.extensions === 'string') {
-        // Clean the string before parsing
         const cleaned = job.extensions.replace(/'/g, '"').replace(/\\/g, '');
         return JSON.parse(cleaned);
       }
@@ -388,13 +186,11 @@ const JobAdCard = ({ job, darkMode, onViewMore }) => {
 
   const extensions = getExtensions();
 
-  // Safely get description tokens
   const getDescriptionTokens = () => {
     try {
       if (!job.description_tokens) return [];
       if (Array.isArray(job.description_tokens)) return job.description_tokens;
       if (typeof job.description_tokens === 'string') {
-        // Clean the string before parsing
         const cleaned = job.description_tokens.replace(/'/g, '"').replace(/\\/g, '');
         return JSON.parse(cleaned);
       }
@@ -407,7 +203,6 @@ const JobAdCard = ({ job, darkMode, onViewMore }) => {
 
   const descriptionTokens = getDescriptionTokens();
 
-  // Shorten description
   const shortDescription = job.description && job.description.length > 150 
     ? job.description.substring(0, 150) + '...' 
     : job.description || 'No description provided';
@@ -491,6 +286,16 @@ const JobAdCard = ({ job, darkMode, onViewMore }) => {
           </div>
         )}
 
+        <div className="flex space-x-3 mb-3">
+          <button 
+            onClick={onDiscuss}
+            className={`flex items-center px-3 py-2 rounded-lg ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`}
+          >
+            <MessageCircle size={16} className="mr-2" />
+            Discuss
+          </button>
+        </div>
+
         <a 
           href={`https://www.linkedin.com/jobs/view/${job.job_id}`}
           target="_blank"
@@ -515,7 +320,7 @@ const ProductAdPopup = ({ product, darkMode, onClose }) => {
     product.img,
     product.img.replace('kjkbv680-0', 'kjkbv680-1'),
     product.img.replace('kjkbv680-0', 'kjkbv680-2')
-  ].filter(Boolean); // Filter out any undefined/null values
+  ].filter(Boolean);
 
   const formatPrice = (price) => {
     if (!price) return '0';
@@ -609,7 +414,7 @@ const ProductAdPopup = ({ product, darkMode, onClose }) => {
   );
 };
 
-const ProductAdCard = ({ product, darkMode, onViewMore }) => {
+const ProductAdCard = ({ product, darkMode, onViewMore, onDiscuss }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [liked, setLiked] = useState(false);
 
@@ -619,7 +424,7 @@ const ProductAdCard = ({ product, darkMode, onViewMore }) => {
     product.img,
     product.img.replace('kjkbv680-0', 'kjkbv680-1'),
     product.img.replace('kjkbv680-0', 'kjkbv680-2')
-  ].filter(Boolean); // Filter out any undefined/null values
+  ].filter(Boolean);
 
   const formatPrice = (price) => {
     if (!price) return '0';
@@ -683,6 +488,16 @@ const ProductAdCard = ({ product, darkMode, onViewMore }) => {
           )}
         </div>
 
+        <div className="flex space-x-3 mb-3">
+          <button 
+            onClick={onDiscuss}
+            className={`flex items-center px-3 py-2 rounded-lg ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`}
+          >
+            <MessageCircle size={16} className="mr-2" />
+            Discuss
+          </button>
+        </div>
+
         <button 
           onClick={onViewMore}
           className={`w-full py-2 px-3 bg-gradient-to-r from-pink-500 to-purple-600 rounded-lg text-white text-xs font-medium hover:opacity-90`}
@@ -703,19 +518,17 @@ const AdsComponent = ({ darkMode, isMobile, showAdPopup, setShowAdPopup }) => {
   const [currentJobIndex, setCurrentJobIndex] = useState(0);
   const [showFullAd, setShowFullAd] = useState(null);
   const [showFullJob, setShowFullJob] = useState(null);
+  const [activeFeature, setActiveFeature] = useState(null);
+  const [activeItem, setActiveItem] = useState(null);
 
-  // Fetch both ads and jobs data
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        
-        // Fetch product ads
         const adsResponse = await fetch('/src/data/adds.json');
         if (!adsResponse.ok) throw new Error('Failed to fetch ads');
         const adsData = await adsResponse.json();
         
-        // Fetch jobs data
         const jobsResponse = await fetch('/src/data/jobs.json');
         if (!jobsResponse.ok) throw new Error('Failed to fetch jobs');
         const jobsData = await jobsResponse.json();
@@ -736,7 +549,6 @@ const AdsComponent = ({ darkMode, isMobile, showAdPopup, setShowAdPopup }) => {
     fetchData();
   }, []);
 
-  // Rotate between ads every 2 seconds
   useEffect(() => {
     if (ads.length > 1) {
       const interval = setInterval(() => {
@@ -746,7 +558,6 @@ const AdsComponent = ({ darkMode, isMobile, showAdPopup, setShowAdPopup }) => {
     }
   }, [ads.length]);
 
-  // Rotate between jobs every 2 seconds
   useEffect(() => {
     if (jobs.length > 1) {
       const interval = setInterval(() => {
@@ -756,7 +567,6 @@ const AdsComponent = ({ darkMode, isMobile, showAdPopup, setShowAdPopup }) => {
     }
   }, [jobs.length]);
 
-  // Show popup on mobile after delay
   useEffect(() => {
     if (isMobile && (ads.length > 0 || jobs.length > 0)) {
       const timer = setTimeout(() => {
@@ -775,15 +585,20 @@ const AdsComponent = ({ darkMode, isMobile, showAdPopup, setShowAdPopup }) => {
   const currentAd = ads[currentAdIndex];
   const currentJob = jobs[currentJobIndex];
 
+  const handleDiscuss = (item, type) => {
+    setActiveFeature('discuss');
+    setActiveItem({ ...item, type });
+  };
+
   return (
     <>
-      {/* Column Ads - Desktop */}
       <div className="hidden lg:block lg:w-80 space-y-4">
         {jobs.length > 0 && (
           <JobAdCard 
             job={currentJob} 
             darkMode={darkMode} 
             onViewMore={() => setShowFullJob(currentJob)} 
+            onDiscuss={() => handleDiscuss(currentJob, 'job')}
           />
         )}
         {ads.length > 0 && (
@@ -791,11 +606,11 @@ const AdsComponent = ({ darkMode, isMobile, showAdPopup, setShowAdPopup }) => {
             product={currentAd} 
             darkMode={darkMode} 
             onViewMore={() => setShowFullAd(currentAd)} 
+            onDiscuss={() => handleDiscuss(currentAd, 'product')}
           />
         )}
       </div>
 
-      {/* Popup Ads - Mobile */}
       {showAdPopup && isMobile && (
         <>
           {jobs.length > 0 && (
@@ -815,7 +630,6 @@ const AdsComponent = ({ darkMode, isMobile, showAdPopup, setShowAdPopup }) => {
         </>
       )}
 
-      {/* Full View Modals */}
       {showFullAd && (
         <ProductAdPopup 
           product={showFullAd} 
@@ -828,6 +642,18 @@ const AdsComponent = ({ darkMode, isMobile, showAdPopup, setShowAdPopup }) => {
           job={showFullJob} 
           darkMode={darkMode} 
           onClose={() => setShowFullJob(null)} 
+        />
+      )}
+
+      {activeFeature === 'discuss' && activeItem && (
+        <Chatbot 
+          key={`chatbot-${activeItem.job_id || activeItem.title}`} 
+          item={activeItem} 
+          darkMode={darkMode} 
+          setActiveFeature={() => {
+            setActiveFeature(null);
+            setActiveItem(null);
+          }} 
         />
       )}
     </>
