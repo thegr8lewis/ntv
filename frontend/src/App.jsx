@@ -6,6 +6,7 @@ import Chatbot from './pages/Chatbot';
 import NewsDetailPage from './pages/NewsDetails';
 import Landingpage from './pages/landingpage';
 import Settings from "./pages/Settings";
+import Adds from './pages/adds';
 
 export default function App() {
   return (
@@ -18,6 +19,7 @@ export default function App() {
           <Route path="verification" element={<Verification />} />
           <Route path="chatbot" element={<Chatbot />} />
           <Route path="settings" element={<Settings />} />
+          <Route path="adds" element={<Adds />} />
         </Route>
         
         {/* Standalone routes */}
