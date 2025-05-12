@@ -8,6 +8,7 @@ import Landingpage from './pages/landingpage';
 import Settings from "./pages/Settings";
 import Adds from './pages/adds';
 import ChatbotAds from './pages/ChatbotAds';
+import ChatRoom from './pages/ChatRoom';
 
 
 export default function App() {
@@ -22,9 +23,11 @@ export default function App() {
           <Route path="chatbot" element={<Chatbot />} />
           <Route path="settings" element={<Settings />} />
           <Route path="adds" element={<Adds />} />
+          
         </Route>
         
         {/* Standalone routes */}
+        <Route path="/chatroom" element={<ChatRoom />} />
         <Route path="/" element={<Landingpage />} />
         <Route path="/settings" element={<Settings />} /> 
         <Route path="/news/:id" element={<NewsDetailPage />} />

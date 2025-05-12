@@ -1,5 +1,17 @@
 from django.db import models
 from django.core.validators import EmailValidator
+from django.db import models
+
+class Resource(models.Model):
+    name = models.CharField(max_length=100)
+    address = models.TextField()
+    phone = models.CharField(max_length=20)
+    latitude = models.FloatField()
+    longitude = models.FloatField()
+    category = models.CharField(max_length=50)  # e.g., 'Farming', 'Health'
+
+    def __str__(self):
+        return self.name
 
 class NewsTopic(models.Model):
     name = models.CharField(max_length=50)
