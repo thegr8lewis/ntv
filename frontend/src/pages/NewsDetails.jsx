@@ -323,15 +323,16 @@
 //   );
 // }
 
-
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, ExternalLink, Check, Shield, Filter, Home, MoreHorizontal, Globe, MessageCircle, Briefcase, Megaphone } from 'lucide-react';
+import { ArrowLeft, ExternalLink, Check, Shield, Filter, Home, MoreHorizontal, Globe, MessageCircle, Briefcase, Megaphone, X } from 'lucide-react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { useEffect, useState } from 'react';
 import newsData from '../data/news.json';
 import jobsData from '../data/jobs.json';
 import Translator from '../pages/Translator';
+import Verification from './Verification';
+import Chatbot from './Chatbot';
 
 export default function NewsDetailPage() {
   const { id } = useParams();
@@ -345,6 +346,7 @@ export default function NewsDetailPage() {
   const [filterType, setFilterType] = useState('category');
   const [activeFeature, setActiveFeature] = useState(null);
   const [darkMode, setDarkMode] = useState(false);
+  const [expandedOptions, setExpandedOptions] = useState(false);
 
   useEffect(() => {
     const fetchNewsData = async () => {
@@ -470,6 +472,14 @@ export default function NewsDetailPage() {
 
   const handleFeatureClick = (feature) => {
     setActiveFeature(activeFeature === feature ? null : feature);
+    setExpandedOptions(false);
+  };
+
+  const toggleOptions = () => {
+    setExpandedOptions(!expandedOptions);
+    if (expandedOptions) {
+      setActiveFeature(null);
+    }
   };
 
   if (loading) {
@@ -505,7 +515,7 @@ export default function NewsDetailPage() {
             className={`flex items-center px-4 py-2 text-sm sm:text-base ${darkMode ? 'bg-blue-700 hover:bg-blue-600' : 'bg-blue-600 hover:bg-blue-700'} text-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5`}
           >
             <ArrowLeft className="mr-2" size={16} strokeWidth={2.5} />
-            <span className="font-medium">Back to News</span>
+            <span className="font-medium"></span>
           </button>
 
           <button 
@@ -513,7 +523,7 @@ export default function NewsDetailPage() {
             className={`flex items-center px-4 py-2 text-sm sm:text-base ${darkMode ? 'bg-emerald-700 hover:bg-emerald-600' : 'bg-emerald-600 hover:bg-emerald-700'} text-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5`}
           >
             <Home className="mr-2" size={16} strokeWidth={2.5} />
-            <span className="font-medium">Go to Homepage</span>
+            <span className="font-medium"></span>
           </button>
         </div>
 
@@ -554,12 +564,42 @@ export default function NewsDetailPage() {
                     <div className="flex-1">
                       <div className="flex justify-between items-start">
                         <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-2">{newsItem.title}</h1>
-                        <button 
-                          onClick={() => handleFeatureClick('translate')}
-                          className={`ml-4 p-2 rounded-full ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'} transition-colors`}
-                        >
-                          <Globe size={18} />
-                        </button>
+                        <div className="relative">
+                          <button 
+                            onClick={toggleOptions}
+                            className={`ml-4 p-2 rounded-full ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'} transition-colors`}
+                          >
+                            <MoreHorizontal size={18} />
+                          </button>
+                          
+                          {expandedOptions && (
+                            <div className={`absolute right-0 mt-1 w-48 rounded-md shadow-lg z-10 ${darkMode ? 'bg-gray-700' : 'bg-white'} ring-1 ${darkMode ? 'ring-gray-600' : 'ring-gray-200'}`}>
+                              <div className="py-1">
+                                <button
+                                  onClick={() => handleFeatureClick('translate')}
+                                  className={`flex items-center px-4 py-2 text-sm w-full text-left ${activeFeature === 'translate' ? (darkMode ? 'bg-blue-900 text-blue-200' : 'bg-blue-100 text-blue-800') : (darkMode ? 'hover:bg-gray-600 text-gray-200' : 'hover:bg-gray-100 text-gray-800')}`}
+                                >
+                                  <Globe size={16} className="mr-2" />
+                                  Translate
+                                </button>
+                                <button
+                                  onClick={() => handleFeatureClick('verify')}
+                                  className={`flex items-center px-4 py-2 text-sm w-full text-left ${activeFeature === 'verify' ? (darkMode ? 'bg-green-900 text-green-200' : 'bg-green-100 text-green-800') : (darkMode ? 'hover:bg-gray-600 text-gray-200' : 'hover:bg-gray-100 text-gray-800')}`}
+                                >
+                                  <Shield size={16} className="mr-2" />
+                                  Verify
+                                </button>
+                                <button
+                                  onClick={() => handleFeatureClick('discuss')}
+                                  className={`flex items-center px-4 py-2 text-sm w-full text-left ${activeFeature === 'discuss' ? (darkMode ? 'bg-purple-900 text-purple-200' : 'bg-purple-100 text-purple-800') : (darkMode ? 'hover:bg-gray-600 text-gray-200' : 'hover:bg-gray-100 text-gray-800')}`}
+                                >
+                                  <MessageCircle size={16} className="mr-2" />
+                                  Discuss
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
                       </div>
                       <div className={`text-xs sm:text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                         <span className="font-medium">{newsItem.author}</span> • {newsItem.timestamp}
@@ -584,6 +624,16 @@ export default function NewsDetailPage() {
                           description: newsItem.description,
                           content: newsItem.fullContent
                         }} 
+                        darkMode={darkMode} 
+                        setActiveFeature={setActiveFeature} 
+                      />
+                    </div>
+                  )}
+                  
+                  {activeFeature === 'verify' && (
+                    <div className="mb-6">
+                      <Verification 
+                        news={newsItem} 
                         darkMode={darkMode} 
                         setActiveFeature={setActiveFeature} 
                       />
@@ -714,6 +764,20 @@ export default function NewsDetailPage() {
           </div>
         </div>
       </main>
+      
+      {activeFeature === 'discuss' && (
+        <div className="fixed inset-0 z-[1001]">
+          <Chatbot 
+            key={`chatbot-${id}`}
+            news={newsItem} 
+            darkMode={darkMode} 
+            setActiveFeature={() => {
+              setActiveFeature(null);
+              setExpandedOptions(false);
+            }} 
+          />
+        </div>
+      )}
       
       <Footer darkMode={darkMode} />
     </div>
