@@ -578,14 +578,13 @@
 //           {!adsLoading && !adsError && ads.length > 0 && (
 //             <div className="hidden lg:block w-80">
 //               <div className="sticky top-20">
-//                 <div className={showAdPopup ? 'relative z-50' : 'relative z-10'}>
+//                 <div className={showAdPopup ? 'relative z-[1000]' : 'relative z-10'}>
 //                   <AdsComponent 
 //                     ads={ads} 
 //                     darkMode={darkMode} 
 //                     isMobile={isMobile.current} 
 //                     showAdPopup={showAdPopup} 
 //                     setShowAdPopup={setShowAdPopup} 
-//                     popupStyle={showAdPopup ? { top: '80px' } : {}} // Adjust popup position below header
 //                   />
 //                 </div>
 //               </div>
@@ -595,21 +594,24 @@
 //       </main>
       
 //       {activeFeature === 'discuss' && activeNews && (
-//         <Chatbot 
-//           key={`chatbot-${activeNewsId}`} 
-//           news={activeNews} 
-//           darkMode={darkMode} 
-//           setActiveFeature={() => {
-//             setActiveFeature(null);
-//             setActiveNewsId(null);
-//           }} 
-//         />
+//         <div className="fixed inset-0 z-[1001]">
+//           <Chatbot 
+//             key={`chatbot-${activeNewsId}`} 
+//             news={activeNews} 
+//             darkMode={darkMode} 
+//             setActiveFeature={() => {
+//               setActiveFeature(null);
+//               setActiveNewsId(null);
+//             }} 
+//           />
+//         </div>
 //       )}
       
 //       <Footer darkMode={darkMode} />
 //     </div>
 //   );
 // }
+
 
 import { useState, useEffect, useRef } from 'react';
 import { 
@@ -622,7 +624,9 @@ import {
   ExternalLink, 
   Search, 
   Filter, 
-  X as XIcon
+  X as XIcon,
+  Eye,
+  Heart
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Header from '../components/Header';
@@ -645,6 +649,7 @@ export default function Layout() {
   const [userTopics, setUserTopics] = useState([]);
   const [isGuest, setIsGuest] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [selectedTopics, setSelectedTopics] = useState([]);
   const [availableTopics, setAvailableTopics] = useState([]);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -652,6 +657,8 @@ export default function Layout() {
   const [adsLoading, setAdsLoading] = useState(true);
   const [adsError, setAdsError] = useState(null);
   const [showAdPopup, setShowAdPopup] = useState(false);
+  const [likes, setLikes] = useState({});
+  const [views, setViews] = useState({});
   const filterRef = useRef(null);
   const isMobile = useRef(false);
 
@@ -668,10 +675,55 @@ export default function Layout() {
     if (isMobile.current && ads.length > 0) {
       const timer = setTimeout(() => {
         setShowAdPopup(true);
-      }, 15000); // Show popup after 15 seconds on mobile
+      }, 15000);
       return () => clearTimeout(timer);
     }
   }, [ads]);
+
+  const generateRandomViews = () => {
+    return Math.floor(Math.random() * 301);
+  };
+
+  const generateRandomLikes = () => {
+    return Math.floor(Math.random() * 101);
+  };
+
+  useEffect(() => {
+    const storedLikes = localStorage.getItem('newsLikes');
+    const storedViews = localStorage.getItem('newsViews');
+    const initialLikes = storedLikes ? JSON.parse(storedLikes) : {};
+    const initialViews = storedViews ? JSON.parse(storedViews) : {};
+
+    const updatedLikes = { ...initialLikes };
+    const updatedViews = { ...initialViews };
+
+    news.forEach(item => {
+      if (!updatedLikes[item.id]) {
+        updatedLikes[item.id] = { count: generateRandomLikes(), isLiked: false };
+      }
+      if (!updatedViews[item.id]) {
+        updatedViews[item.id] = generateRandomViews();
+      }
+    });
+
+    setLikes(updatedLikes);
+    setViews(updatedViews);
+    localStorage.setItem('newsLikes', JSON.stringify(updatedLikes));
+    localStorage.setItem('newsViews', JSON.stringify(updatedViews));
+  }, [news]);
+
+  const handleLikeToggle = (newsId) => {
+    setLikes(prevLikes => {
+      const updatedLikes = { ...prevLikes };
+      const currentLike = updatedLikes[newsId];
+      const newIsLiked = !currentLike.isLiked;
+      const newCount = newIsLiked ? currentLike.count + 1 : currentLike.count - 1;
+
+      updatedLikes[newsId] = { count: newCount, isLiked: newIsLiked };
+      localStorage.setItem('newsLikes', JSON.stringify(updatedLikes));
+      return updatedLikes;
+    });
+  };
 
   const processNewsData = (data) => {
     try {
@@ -838,6 +890,7 @@ export default function Layout() {
   const clearFilters = () => {
     setSearchQuery('');
     setSelectedTopics([]);
+    setIsSearchOpen(false);
   };
   
   useEffect(() => {
@@ -898,153 +951,199 @@ export default function Layout() {
     <div className={`min-h-screen ${darkMode ? 'bg-gray-900 text-gray-100' : 'bg-gray-50 text-gray-800'} transition-colors duration-300`}>
       <Header darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
       
-      <main className="container mx-auto px-4 py-8">
-        <div className={`mb-8 p-4 rounded-xl ${darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white'} shadow-md`}>
-          <div className="flex flex-col md:flex-row md:items-center gap-4">
-            <div className="relative flex-1">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Search size={18} className={darkMode ? 'text-gray-400' : 'text-gray-500'} />
-              </div>
-              <input
-                type="text"
-                placeholder="Search articles by title, content, author..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className={`pl-10 pr-4 py-2 w-full rounded-lg border ${
-                  darkMode 
-                    ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500' 
-                    : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:border-blue-500'
-                } focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50`}
-              />
-              {searchQuery && (
-                <button 
-                  onClick={() => setSearchQuery('')}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                >
-                  <XIcon size={18} className={darkMode ? 'text-gray-400 hover:text-white' : 'text-gray-500 hover:text-gray-700'} />
-                </button>
-              )}
-            </div>
-            
-            <div className="relative" ref={filterRef}>
-              <button 
-                className={`px-4 py-2 rounded-lg flex items-center gap-2 ${
-                  darkMode 
-                    ? 'bg-gray-700 text-white hover:bg-gray-600' 
-                    : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
-                } transition-colors`}
-                onClick={() => setIsFilterOpen(!isFilterOpen)}
-              >
-                <Filter size={18} />
-                Filter Topics
-                {selectedTopics.length > 0 && (
-                  <span className={`text-xs font-medium px-2 py-1 rounded-full ${
-                    darkMode ? 'bg-blue-800 text-blue-100' : 'bg-blue-100 text-blue-800'
-                  }`}>
-                    {selectedTopics.length}
-                  </span>
-                )}
-              </button>
-              
-              {isFilterOpen && (
-                <div 
-                  className={`absolute right-0 mt-2 w-64 p-4 rounded-lg shadow-lg z-20 ${
-                    darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'
-                  }`}
-                >
-                  <div className="mb-2 flex justify-between items-center">
-                    <h3 className="font-medium">Topics</h3>
-                    <div className="flex items-center gap-2">
+      <main className="container mx-auto px-4 py-4">
+        <div className={`mb-8 p-1 rounded-xl ${darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white'} shadow-md`}>
+          {/* Search and Filter Section */}
+          <div className="flex flex-col gap-4">
+            {/* Search, Filter, and Topics in One Line */}
+            <div className="flex items-center gap-3">
+              {!isSearchOpen ? (
+                <>
+                  <button 
+                    onClick={() => setIsSearchOpen(true)} 
+                    className={`p-2 rounded-full ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-200'}`}
+                  >
+                    <Search size={18} className={darkMode ? 'text-gray-400' : 'text-gray-500'} />
+                  </button>
+
+                  <div className="relative" ref={filterRef}>
+                    <button 
+                      className={`px-4 py-2 rounded-full flex items-center gap-2 font-medium ${
+                        darkMode 
+                          ? 'bg-gray-700 text-white hover:bg-gray-600 border border-gray-600' 
+                          : 'bg-gray-100 text-gray-800 hover:bg-gray-200 border border-gray-300'
+                      } transition-all duration-300 shadow-sm hover:shadow-md`}
+                      onClick={() => setIsFilterOpen(!isFilterOpen)}
+                    >
+                      <Filter size={18} />
                       {selectedTopics.length > 0 && (
-                        <button 
-                          onClick={clearFilters}
-                          className={`text-xs ${darkMode ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-700'}`}
-                        >
-                          Clear all
-                        </button>
+                        <span className={`text-xs font-medium px-2 py-1 rounded-full ${
+                          darkMode ? 'bg-blue-800 text-blue-100' : 'bg-blue-100 text-blue-800'
+                        }`}>
+                          {selectedTopics.length}
+                        </span>
                       )}
-                      <button 
-                        onClick={() => setIsFilterOpen(false)}
-                        className={`p-1 rounded-full ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-200'}`}
+                    </button>
+                    
+                    {isFilterOpen && (
+                      <div 
+                        className={`absolute left-0 mt-2 w-64 p-4 rounded-lg shadow-lg z-20 ${
+                          darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'
+                        } transition-all duration-300`}
                       >
-                        <XIcon size={16} />
-                      </button>
-                    </div>
-                  </div>
-                  
-                  <div className="max-h-60 overflow-y-auto">
-                    {topicsToShow.length > 0 ? (
-                      topicsToShow.map((topic) => (
-                        <div key={topic} className="flex items-center mb-2">
-                          <input
-                            type="checkbox"
-                            id={`topic-${topic}`}
-                            checked={selectedTopics.includes(topic)}
-                            onChange={() => handleTopicToggle(topic)}
-                            className="mr-2 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                          />
-                          <label 
-                            htmlFor={`topic-${topic}`}
-                            className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}
-                          >
-                            {topic}
-                          </label>
+                        <div className="mb-2 flex justify-between items-center">
+                          <h3 className="font-medium">Topics</h3>
+                          <div className="flex items-center gap-2">
+                            {selectedTopics.length > 0 && (
+                              <button 
+                                onClick={clearFilters}
+                                className={`text-xs ${darkMode ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-700'}`}
+                              >
+                                Clear all
+                              </button>
+                            )}
+                            <button 
+                              onClick={() => setIsFilterOpen(false)}
+                              className={`p-1 rounded-full ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-200'}`}
+                            >
+                              <XIcon size={16} />
+                            </button>
+                          </div>
                         </div>
-                      ))
-                    ) : (
-                      <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                        No topics available
-                      </p>
+                        
+                        <div className="max-h-60 overflow-y-auto">
+                          {topicsToShow.length > 0 ? (
+                            topicsToShow.map((topic) => (
+                              <div key={topic} className="flex items-center mb-2">
+                                <input
+                                  type="checkbox"
+                                  id={`topic-${topic}`}
+                                  checked={selectedTopics.includes(topic)}
+                                  onChange={() => handleTopicToggle(topic)}
+                                  className="mr-2 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                />
+                                <label 
+                                  htmlFor={`topic-${topic}`}
+                                  className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}
+                                >
+                                  {topic}
+                                </label>
+                              </div>
+                            ))
+                          ) : (
+                            <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                              No topics available
+                            </p>
+                          )}
+                        </div>
+                        
+                        {!isGuest && (
+                          <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+                            <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                              Showing topics from your subscription preferences
+                            </p>
+                          </div>
+                        )}
+                      </div>
                     )}
                   </div>
-                  
-                  {!isGuest && (
-                    <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
-                      <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                        Showing topics from your subscription preferences
-                      </p>
-                    </div>
+
+                  <div className="flex items-center gap-3 overflow-x-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200 dark:scrollbar-thumb-gray-600 dark:scrollbar-track-gray-800">
+                    <button
+                      onClick={() => setSelectedTopics([])}
+                      className={`flex-shrink-0 px-4 py-2 rounded-full font-medium text-sm transition-all duration-300 shadow-sm hover:shadow-md ${
+                        selectedTopics.length === 0
+                          ? darkMode
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-blue-500 text-white'
+                          : darkMode
+                          ? 'bg-gray-700 text-gray-300 hover:bg-gray-600 border border-gray-600'
+                          : 'bg-gray-100 text-gray-800 hover:bg-gray-200 border border-gray-300'
+                      }`}
+                    >
+                      All
+                    </button>
+                    {topicsToShow.map((topic) => (
+                      <button
+                        key={topic}
+                        onClick={() => handleTopicToggle(topic)}
+                        className={`flex-shrink-0 px-4 py-2 rounded-full font-medium text-sm transition-all duration-300 shadow-sm hover:shadow-md ${
+                          selectedTopics.includes(topic)
+                            ? darkMode
+                              ? 'bg-blue-600 text-white'
+                              : 'bg-blue-500 text-white'
+                            : darkMode
+                            ? 'bg-gray-700 text-gray-300 hover:bg-gray-600 border border-gray-600'
+                            : 'bg-gray-100 text-gray-800 hover:bg-gray-200 border border-gray-300'
+                        }`}
+                      >
+                        {topic}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              ) : (
+                <div className="relative flex items-center w-full max-w-[300px]">
+                  <button 
+                    onClick={() => setIsSearchOpen(false)} 
+                    className={`p-2 rounded-full ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-200'} mr-2`}
+                  >
+                    <Search size={18} className={darkMode ? 'text-gray-400' : 'text-gray-500'} />
+                  </button>
+                  <input
+                    type="text"
+                    placeholder="Search articles..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className={`pl-4 pr-10 py-2 w-full max-w-[300px] rounded-full border ${
+                      darkMode 
+                        ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500' 
+                        : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:border-blue-500'
+                    } focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-all duration-300 shadow-sm hover:shadow-md`}
+                  />
+                  {searchQuery && (
+                    <button 
+                      onClick={() => setSearchQuery('')}
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                    >
+                      <XIcon size={18} className={darkMode ? 'text-gray-400 hover:text-white' : 'text-gray-500 hover:text-gray-700'} />
+                    </button>
                   )}
                 </div>
               )}
             </div>
-            
-            {(searchQuery || selectedTopics.length > 0) && (
-              <div className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                Showing {filteredNews.length} of {news.length} articles
+
+            {/* Selected Topics and Clear Filters */}
+            {selectedTopics.length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-4">
+                {selectedTopics.map(topic => (
+                  <span 
+                    key={topic}
+                    className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
+                      darkMode ? 'bg-blue-900 text-blue-200' : 'bg-blue-100 text-blue-800'
+                    } transition-all duration-300 shadow-sm`}
+                  >
+                    {topic}
+                    <button 
+                      onClick={() => handleTopicToggle(topic)}
+                      className="ml-1 rounded-full hover:bg-blue-200 dark:hover:bg-blue-800 p-0.5"
+                    >
+                      <XIcon size={14} />
+                    </button>
+                  </span>
+                ))}
+                
+                <button 
+                  onClick={clearFilters}
+                  className={`text-xs px-3 py-1 rounded-full font-medium ${
+                    darkMode ? 'text-gray-300 hover:text-white bg-gray-700 hover:bg-gray-600' : 'text-gray-700 hover:text-gray-900 bg-gray-100 hover:bg-gray-200'
+                  } transition-all duration-300 shadow-sm hover:shadow-md`}
+                >
+                  Clear all
+                </button>
               </div>
             )}
           </div>
-          
-          {selectedTopics.length > 0 && (
-            <div className="mt-3 flex flex-wrap gap-2">
-              {selectedTopics.map(topic => (
-                <span 
-                  key={topic}
-                  className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
-                    darkMode ? 'bg-blue-900 text-blue-200' : 'bg-blue-100 text-blue-800'
-                  }`}
-                >
-                  {topic}
-                  <button 
-                    onClick={() => handleTopicToggle(topic)}
-                    className="ml-1 rounded-full hover:bg-blue-200 dark:hover:bg-blue-800 p-0.5"
-                  >
-                    <XIcon size={14} />
-                  </button>
-                </span>
-              ))}
-              
-              <button 
-                onClick={clearFilters}
-                className={`text-xs px-3 py-1 rounded-full ${
-                  darkMode ? 'text-gray-300 hover:text-white' : 'text-gray-700 hover:text-gray-900'
-                }`}
-              >
-                Clear all
-              </button>
-            </div>
-          )}
         </div>
         
         <div className="flex flex-col lg:flex-row gap-8">
@@ -1136,6 +1235,33 @@ export default function Layout() {
                       
                       <p className={`mb-4 ${darkMode ? 'text-gray-300' : 'text-gray-600'} line-clamp-3`}>{item.description}</p>
                       
+                      <div className="flex items-center gap-4 mb-4">
+                        <button 
+                          onClick={() => handleLikeToggle(item.id)}
+                          className="flex items-center gap-1 transition-all duration-300"
+                        >
+                          <Heart 
+                            size={16} 
+                            className={
+                              likes[item.id]?.isLiked 
+                                ? 'text-red-500 fill-red-500' 
+                                : darkMode 
+                                  ? 'text-gray-400' 
+                                  : 'text-gray-500'
+                            } 
+                          />
+                          <span className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                            {likes[item.id]?.count || 0}
+                          </span>
+                        </button>
+                        <div className="flex items-center gap-1">
+                          <Eye size={16} className={darkMode ? 'text-gray-400' : 'text-gray-500'} />
+                          <span className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                            {views[item.id] || 0}
+                          </span>
+                        </div>
+                      </div>
+
                       <div className="mt-auto">
                         {item.keywords && item.keywords.length > 0 && (
                           <div className="flex flex-wrap gap-2 mb-3">
@@ -1187,7 +1313,6 @@ export default function Layout() {
             </div>
           </div>
 
-          {/* Sticky Ads Component with Popup Fix */}
           {!adsLoading && !adsError && ads.length > 0 && (
             <div className="hidden lg:block w-80">
               <div className="sticky top-20">

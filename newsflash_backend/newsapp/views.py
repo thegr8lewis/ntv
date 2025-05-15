@@ -1,4 +1,4 @@
-
+from django.db import models
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -17,6 +17,139 @@ from django.views.decorators.csrf import csrf_exempt
 from django.core.cache import cache
 from .models import Resource
 from geopy.distance import geodesic
+
+
+
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework import status
+from .models import NewsItem, UserSession, NewsInteraction, UserBehavior
+from .serializers import NewsItemSerializer, NewsInteractionSerializer, UserBehaviorSerializer
+import json
+
+@api_view(['POST'])
+def track_user_behavior(request):
+    data = request.data
+    session_id = data.get('session_id')
+    event_type = data.get('event_type')
+    event_data = data.get('event_data', {})
+    device_type = data.get('device_type', 'desktop')
+    
+    # Get or create session
+    session, created = UserSession.objects.get_or_create(
+        session_id=session_id,
+        defaults={'device_type': device_type}
+    )
+    
+    # Create behavior record
+    behavior = UserBehavior.objects.create(
+        session=session,
+        event_type=event_type,
+        event_data=event_data
+    )
+    
+    # Handle specific events
+    if event_type == 'news_view':
+        news_id = event_data.get('news_id')
+        if news_id:
+            news_item = NewsItem.objects.filter(id=news_id).first()
+            if news_item:
+                interaction, _ = NewsInteraction.objects.get_or_create(
+                    news_item=news_item,
+                    session=session
+                )
+                interaction.viewed = True
+                interaction.view_count += 1
+                interaction.save()
+    
+    elif event_type in ['news_like', 'news_unlike']:
+        news_id = event_data.get('news_id')
+        if news_id:
+            news_item = NewsItem.objects.filter(id=news_id).first()
+            if news_item:
+                interaction, _ = NewsInteraction.objects.get_or_create(
+                    news_item=news_item,
+                    session=session
+                )
+                interaction.liked = (event_type == 'news_like')
+                interaction.save()
+    
+    return Response({'status': 'success'}, status=status.HTTP_201_CREATED)
+
+@api_view(['POST'])
+def handle_like(request):
+    data = request.data
+    news_id = data.get('news_id')
+    action = data.get('action')
+    session_id = data.get('session_id')
+    
+    if not news_id or action not in ['like', 'unlike']:
+        return Response({'error': 'Invalid data'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    # Get or create session
+    session, _ = UserSession.objects.get_or_create(
+        session_id=session_id,
+        defaults={'device_type': 'desktop'}
+    )
+    
+    # Get news item
+    news_item = NewsItem.objects.filter(id=news_id).first()
+    if not news_item:
+        return Response({'error': 'News item not found'}, status=status.HTTP_404_NOT_FOUND)
+    
+    # Update interaction
+    interaction, created = NewsInteraction.objects.get_or_create(
+        news_item=news_item,
+        session=session
+    )
+    interaction.liked = (action == 'like')
+    interaction.save()
+    
+    return Response({'status': 'success'}, status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+def get_liked_news(request):
+    session_id = request.query_params.get('session_id')
+    if not session_id:
+        return Response({'error': 'Session ID required'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    session = UserSession.objects.filter(session_id=session_id).first()
+    if not session:
+        return Response({'liked_news': []}, status=status.HTTP_200_OK)
+    
+    liked_news = NewsInteraction.objects.filter(
+        session=session,
+        liked=True
+    ).values_list('news_item_id', flat=True)
+    
+    return Response({'liked_news': list(liked_news)}, status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+def get_news_stats(request):
+    # Get view counts and like counts for all news items
+    stats = {}
+    
+    # Get view counts
+    view_counts = NewsInteraction.objects.values('news_item_id').annotate(
+        views=models.Count('id', filter=models.Q(viewed=True))
+    )
+    
+    # Get like counts
+    like_counts = NewsInteraction.objects.values('news_item_id').annotate(
+        likes=models.Count('id', filter=models.Q(liked=True))
+    )
+    
+    # Combine stats
+    for item in view_counts:
+        stats[item['news_item_id']] = {'views': item['views']}
+    
+    for item in like_counts:
+        if item['news_item_id'] in stats:
+            stats[item['news_item_id']]['likes'] = item['likes']
+        else:
+            stats[item['news_item_id']] = {'likes': item['likes']}
+    
+    return Response(stats, status=status.HTTP_200_OK)
 
 # Set up logging
 logging.basicConfig(level=logging.DEBUG)

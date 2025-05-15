@@ -1,6 +1,25 @@
 from rest_framework import serializers
 from .models import NewsTopic, Subscriber
 
+
+from .models import NewsItem, NewsInteraction, UserBehavior
+
+class NewsItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = NewsItem
+        fields = '__all__'
+
+class NewsInteractionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = NewsInteraction
+        fields = ['news_item', 'liked', 'viewed', 'view_count']
+
+class UserBehaviorSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserBehavior
+        fields = ['event_type', 'event_data', 'timestamp']
+
+
 class NewsTopicSerializer(serializers.ModelSerializer):
     class Meta:
         model = NewsTopic
